@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,11 +43,12 @@ import com.example.lab_week_09.ui.theme.OnBackgroundItemText
 import com.example.lab_week_09.ui.theme.OnBackgroundTitleText
 import com.example.lab_week_09.ui.theme.PrimaryTextButton
 
-import com.google.gson.Gson
 import java.net.URLEncoder
+import java.net.URLDecoder
 
 
 // --- Data Class ---
+// Removed Moshi imports/annotations
 data class Student(
     var name: String
 )
@@ -82,7 +81,7 @@ fun App(navController: NavHostController) {
         composable("home") {
             // Pass the navigation function down to Home
             Home(onNavigateToResult = { listData ->
-                // MODIFICATION 1: Use the standard Kotlin List toString() representation
+                // REVERTED: Use the standard Kotlin List toString() representation
                 val listString = listData.toList().toString()
 
                 // URL encode the string to safely pass it as an argument
@@ -125,7 +124,11 @@ fun Home(onNavigateToResult: (SnapshotStateList<Student>) -> Unit) {
             // Update the state using .copy and the new name
             inputFieldState = inputFieldState.copy(name = input)
         },
+        // Keeping MODIFICATION 1: Pass the name check to HomeContent for button enable/disable
+        isInputValid = inputFieldState.name.isNotBlank(),
         onButtonClick = {
+            // Note: The isNotBlank check is technically redundant here due to button disable,
+            // but it's safe to keep for defensive programming.
             if (inputFieldState.name.isNotBlank()) {
                 // Add a copy of the current state to the list
                 listData.add(inputFieldState.copy())
@@ -146,6 +149,7 @@ fun HomeContent(
     listData: SnapshotStateList<Student>,
     inputField: Student,
     onInputValueChange: (String) -> Unit,
+    isInputValid: Boolean, // New parameter for validation
     onButtonClick: () -> Unit,
     onNavigateToResult: () -> Unit
 ) {
@@ -176,14 +180,20 @@ fun HomeContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    // MODIFICATION 1: Button is only enabled if the input is valid
+                    // FIX: Explicitly name all arguments when 'onClick' is not the last one
+                    PrimaryTextButton(
+                        text = stringResource(id = R.string.button_click),
+                        enabled = isInputValid, // Pass the boolean value
+                        onClick = { onButtonClick() } // Explicitly pass the onClick lambda
+                    )
+
                     // Using custom UI component
-                    PrimaryTextButton(text = stringResource(id = R.string.button_click)) {
-                        onButtonClick()
-                    }
-                    // Using custom UI component
-                    PrimaryTextButton(text = stringResource(id = R.string.button_navigate)) {
-                        onNavigateToResult()
-                    }
+                    // FIX: Explicitly name the onClick argument
+                    PrimaryTextButton(
+                        text = stringResource(id = R.string.button_navigate),
+                        onClick = { onNavigateToResult() } // Explicitly pass the onClick lambda
+                    )
                 }
             }
         }
@@ -203,11 +213,12 @@ fun HomeContent(
 
 // --- Result Content Composable ---
 @Composable
-fun ResultContent(listData: String) {
-    // Decode the URL encoded string
-    val decodedListString = java.net.URLDecoder.decode(listData, "UTF-8")
+fun ResultContent(listDataJson: String) { // Renamed parameter to listDataString for clarity
 
-    // MODIFICATION 2: Remove the parsing/splitting logic and display the raw string.
+    // Decode the URL encoded string
+    val decodedListString = URLDecoder.decode(listDataJson, "UTF-8")
+
+    // REVERTED: Simple display of the received string.
 
     Column(
         modifier = Modifier
@@ -215,6 +226,7 @@ fun ResultContent(listData: String) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        OnBackgroundTitleText(text = "Raw List Output")
         Spacer(modifier = Modifier.height(16.dp))
 
         // Display the entire decoded string in a single custom Text component
@@ -235,6 +247,7 @@ fun PreviewHomeContent() {
             listData = mockList,
             inputField = Student(name = "New Student"),
             onInputValueChange = {},
+            isInputValid = true, // Set to true for previewing enabled state
             onButtonClick = {},
             onNavigateToResult = {}
         )

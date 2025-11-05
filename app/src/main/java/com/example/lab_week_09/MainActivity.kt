@@ -26,6 +26,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.lab_week_09.ui.theme.LAB_WEEK_09Theme
+import com.example.lab_week_09.ui.theme.OnBackgroundItemText
+import com.example.lab_week_09.ui.theme.OnBackgroundTitleText
+import com.example.lab_week_09.ui.theme.PrimaryTextButton
 
 // --- Data Class ---
 data class Student(
@@ -98,54 +101,52 @@ fun HomeContent(
         //Here, we use item to display an item inside the LazyColumn
         item {
             Column(
-                // Fixed the Modifier chain syntax
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // IMPORTANT: Ensure R.string.enter_item is defined in strings.xml
-                Text(text = stringResource(
-                    id = R.string.enter_item)
-                )
-                //Here, we use TextField to display a text input field
-                TextField(
-                    //Set the value of the input field
-                    value = inputField.name,
-                    //Set the keyboard type of the input field
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text
-                    ),
-                    onValueChange = {
-                        // Pass the new text (it) up via the lambda function
-                        onInputValueChange(it)
-                    }
-                )
+            //Here, we call the OnBackgroundTitleText UI Element
+            OnBackgroundTitleText(text = stringResource(
+                id = R.string.enter_item)
+            )
 
-                Button(onClick = {
-                    //Here, we call the onButtonClick lambda function
-                    onButtonClick()
-                }) {
-                    //Set the text of the button
-                    // IMPORTANT: Ensure R.string.button_click is defined in strings.xml
-                    Text(text = stringResource(
-                        id = R.string.button_click)
-                    )
+            //Here, we use TextField to display a text input field
+            TextField(
+                //Set the value of the input field
+                value = inputField.name,
+                //Set the keyboard type of the input field
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text
+                ),
+                //Set what happens when the value of the input field changes
+                onValueChange = {
+                    //Here, we call the onInputValueChange lambda function
+                    //and pass the value of the input field as a parameter
+                    //This is so th
+                    onInputValueChange(it)
                 }
+            )
+            //Here, we call the PrimaryTextButton UI Element
+            PrimaryTextButton(text = stringResource(
+                id = R.string.button_click)
+            ) {
+                onButtonClick()
             }
         }
-
+        }
+        //Here, we use items to display a list of items inside the LazyColumn
         //This is the RecyclerView replacement
         //We pass the listData as a parameter
         items(listData) { item ->
             Column(
-                // Fixed the Modifier chain syntax
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = item.name)
+                //Here, we call the OnBackgroundItemText UI Element
+                OnBackgroundItemText(text = item.name)
             }
         }
     }
